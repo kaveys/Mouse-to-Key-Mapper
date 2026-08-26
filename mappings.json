@@ -1,0 +1,31 @@
+{
+  "_说明": "鼠标按键到键盘快捷键的映射配置。修改后按 Ctrl+Alt+R 热重载，无需重启程序。",
+
+  "_鼠标按键对照": {
+    "left":   "左键 (按钮1)",
+    "right":  "右键 (按钮2)",
+    "middle": "中键/滚轮 (按钮3)",
+    "x1":     "侧键4 (后退按钮)",
+    "x2":     "侧键5 (前进按钮)"
+  },
+
+  "_action写法": "用 + 连接，修饰键在前、主键在最后，如 alt+f、ctrl+shift+s、win+e、f5",
+
+  "mappings": [
+    {
+      "mouse_button": "x2",
+      "action": "alt+f",
+      "description": "鼠标侧键5 (前进) -> Alt+F"
+    },
+    {
+      "mouse_button": "x1",
+      "action": "ctrl+w",
+      "description": "鼠标侧键4 (后退) -> Ctrl+W (关闭标签页)"
+    },
+    {
+      "mouse_button": "middle",
+      "action": "ctrl+c",
+      "description": "中键 -> Ctrl+C (复制，示例，可按需删除)"
+    }
+  ]
+}
