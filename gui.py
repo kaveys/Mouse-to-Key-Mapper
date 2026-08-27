@@ -605,7 +605,14 @@ class MapperApp:
 
     # ================= 关闭询问 / 系统托盘 =================
     def _on_close(self):
-        """窗口关闭按钮：询问 最小化到托盘 / 彻底关闭 / 取消。"""
+        """窗口关闭按钮（含任务栏"关闭窗口"）：先恢复界面，再询问 最小化到托盘 / 彻底关闭 / 取消。
+
+        保证无论从任务栏关闭还是程序内关闭，体验完全一致：先显示窗口，再弹选项。
+        避免主窗口 withdraw 隐藏时，Toplevel 对话框因父窗口不可见而卡死/无法渲染。
+        """
+        # 1. 先把隐藏的窗口恢复出来（与程序内关闭效果一致）
+        self._show_window()
+        # 2. 弹询问对话框
         choice = self._ask_close_action()
         if choice == 'tray':
             self._minimize_to_tray()
@@ -724,10 +731,11 @@ class MapperApp:
         self.root.focus_force()
 
     def _fully_quit(self):
-        """彻底关闭：停止所有服务/监听/托盘，销毁窗口。"""
+        """彻底关闭：停止所有服务/监听/托盘，销毁窗口并退出事件循环。"""
         if self.quitting:
             return
         self.quitting = True
+        # 停止所有监听器与服务
         if self.mapper:
             self.mapper.stop()
             self.mapper = None
@@ -743,7 +751,22 @@ class MapperApp:
             except Exception:
                 pass
             self.tray_icon = None
-        self.root.destroy()
+        # 用 after 回到主线程，避免在回调中间 destroy 引发死锁
+        try:
+            self.root.after(0, self._safe_destroy)
+        except Exception:
+            pass
+
+    def _safe_destroy(self):
+        """主线程安全销毁窗口并退出事件循环，确保进程不挂住。"""
+        try:
+            self.root.quit()       # 结束 Tk mainloop，事件循环干净退出
+        except Exception:
+            pass
+        try:
+            self.root.destroy()    # 销毁所有 UI 资源
+        except Exception:
+            pass
 
 
 def _setup_dpi():
